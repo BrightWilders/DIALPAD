@@ -19,10 +19,21 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
+    h2 {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: inline-block;
+      margin-top: 10px;
+      margin-right: 8px;
+      font-weight: 600;
+    }
+
     input[type="number"] {
       padding: 6px;
       font-size: 14px;
-      width: 120px;
+      width: 140px;
       margin-right: 10px;
     }
 
@@ -34,10 +45,22 @@
       border-radius: 6px;
       cursor: pointer;
       margin-top: 10px;
+      font-size: 14px;
     }
 
     button:hover {
       background-color: #005b99;
+    }
+
+    .allocation-note {
+      margin-top: 18px;
+      margin-bottom: 22px;
+      padding: 12px 14px;
+      background: #f7fbff;
+      border: 1px solid #cfe6f7;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
     table {
@@ -50,14 +73,24 @@
     th, td {
       border: 1px solid #ccc;
       padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
     }
 
     th {
       background-color: #eef3f7;
     }
 
+    details {
+      margin-top: 20px;
+    }
+
+    .details-section {
+      margin-top: 40px;
+    }
+
     .memo-box {
-      margin-top: 25px;
+      margin-top: 30px;
       padding: 14px;
       background: #f7fbff;
       border: 1px solid #cfe6f7;
@@ -71,12 +104,18 @@
       border: 1px solid #ddd;
       margin-top: 8px;
       display: inline-block;
+      border-radius: 6px;
     }
 
     .copied-msg {
       margin-left: 10px;
       color: green;
       display: none;
+      font-size: 13px;
+    }
+
+    .total-row td {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -84,21 +123,31 @@
   <div class="container">
     <h2>Dialpad Vendor Split</h2>
 
-    <label>Total Invoice Amount:</label>
+    <label for="dialpad-total">Total Invoice Amount:</label>
     <input type="number" id="dialpad-total" value="0" step="0.01">
     <button onclick="calculateDialpad()">Calculate Allocation</button>
+
+    <div class="allocation-note">
+      <strong>DIALPAD MONTHLY INVOICE</strong> - Accounting 1.62%, Gems 58.52%, HR 3.25%, OPS 17.79%, OSM 3.25%, Risk 1.63%, Sales 1.63%, SH5 12.31%
+    </div>
 
     <div id="dialpad-result"></div>
   </div>
 
   <script>
     function formatNumber(num) {
-      return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return num.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
 
     function getCurrentMonthYear() {
       const today = new Date();
-      return today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      return today.toLocaleDateString('en-US', {
+        month: 'long',
+        year: 'numeric'
+      });
     }
 
     function copyMemo() {
@@ -106,14 +155,15 @@
       navigator.clipboard.writeText(memoText).then(() => {
         const msg = document.getElementById("copied-msg");
         msg.style.display = "inline";
-        setTimeout(() => msg.style.display = "none", 2000);
+        setTimeout(() => {
+          msg.style.display = "none";
+        }, 2000);
       });
     }
 
     function calculateDialpad() {
       const total = parseFloat(document.getElementById("dialpad-total").value) || 0;
       const monthYear = getCurrentMonthYear();
-
       const breezewayMemo = `Dialpad Monthly Phone Charge - ${monthYear} (805-7210-100) *(BKW BLDG 7)`;
 
       const data = [
@@ -124,8 +174,6 @@
         { user: "OSM", pct: 3.25, coding: "7210", dept: "Owner Success", class: "Unassigned Listing" },
         { user: "Risk", pct: 1.63, coding: "7210", dept: "Corp Ops - Legal & Risk", class: "Unassigned Listing" },
         { user: "Sales", pct: 1.63, coding: "7210", dept: "Sales & Marketing", class: "Unassigned Listing" },
-
-        // ONLY KEEP 5039 FOR SH5
         { user: "SH5", pct: 12.31, coding: "5039", dept: "Maintenance", class: "BKW Bldg 7" }
       ];
 
@@ -138,45 +186,73 @@
         grandTotal += amount;
 
         const key = `${item.coding}||${item.dept}||${item.class}`;
-        if (!pivot[key]) pivot[key] = 0;
+        if (!pivot[key]) {
+          pivot[key] = 0;
+        }
         pivot[key] += amount;
 
-        detailRows.push(`<tr>
-          <td>${item.user}</td>
-          <td>${item.pct.toFixed(2)}%</td>
-          <td>$${formatNumber(amount)}</td>
-          <td>${item.coding}</td>
-          <td>${item.dept}</td>
-          <td>${item.class}</td>
-        </tr>`);
+        detailRows.push(`
+          <tr>
+            <td>${item.user}</td>
+            <td>${item.pct.toFixed(2)}%</td>
+            <td>$${formatNumber(amount)}</td>
+            <td>${item.coding}</td>
+            <td>${item.dept}</td>
+            <td>${item.class}</td>
+          </tr>
+        `);
       });
 
       const pivotRows = Object.entries(pivot).map(([key, value]) => {
         const [coding, dept, cls] = key.split("||");
-        return `<tr>
-          <td>${coding}</td>
-          <td>${dept}</td>
-          <td>${cls}</td>
-          <td style="text-align:right;">$${formatNumber(value)}</td>
-        </tr>`;
+        return `
+          <tr>
+            <td>${coding}</td>
+            <td>${dept}</td>
+            <td>${cls}</td>
+            <td style="text-align:right;">$${formatNumber(value)}</td>
+          </tr>
+        `;
       }).join("");
 
       document.getElementById("dialpad-result").innerHTML = `
-
         <details open>
           <summary>Summary</summary>
           <table>
-            <tr><th>Coding</th><th>Department</th><th>Class</th><th>Amount</th></tr>
-            ${pivotRows}
-            <tr><td colspan="3"><b>Total</b></td><td><b>$${formatNumber(grandTotal)}</b></td></tr>
+            <thead>
+              <tr>
+                <th>Coding</th>
+                <th>Department</th>
+                <th>Class</th>
+                <th style="text-align:right;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${pivotRows}
+              <tr class="total-row">
+                <td colspan="3">Total</td>
+                <td style="text-align:right;">$${formatNumber(grandTotal)}</td>
+              </tr>
+            </tbody>
           </table>
         </details>
 
-        <details>
+        <details class="details-section">
           <summary>Details</summary>
           <table>
-            <tr><th>User</th><th>%</th><th>Amount</th><th>Coding</th><th>Dept</th><th>Class</th></tr>
-            ${detailRows.join("")}
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>%</th>
+                <th>Amount</th>
+                <th>Coding</th>
+                <th>Dept</th>
+                <th>Class</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detailRows.join("")}
+            </tbody>
           </table>
         </details>
 
@@ -186,7 +262,6 @@
           <button onclick="copyMemo()">Copy Memo</button>
           <span id="copied-msg" class="copied-msg">Copied!</span>
         </div>
-
       `;
     }
   </script>
