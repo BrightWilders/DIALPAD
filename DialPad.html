@@ -85,7 +85,7 @@
     }
 
     .memo-box {
-      margin-top: 20px;
+      margin-top: 25px;
       padding: 14px;
       background: #f7fbff;
       border: 1px solid #cfe6f7;
@@ -199,12 +199,6 @@
       }).join("");
 
       const output = `
-        <div class="memo-box">
-          <strong>Breezeway Memo for SH5 7210</strong>
-          <div id="breezeway-memo" class="memo-text">${breezewayMemo}</div><br>
-          <button onclick="copyMemo()">Copy Memo</button>
-          <span id="copied-msg" class="copied-msg">Copied!</span>
-        </div>
 
         <details open>
           <summary>Summary by Coding / Dept / Class</summary>
@@ -242,7 +236,16 @@
             </thead>
             <tbody>${detailRows.join("")}</tbody>
           </table>
-        </details>`;
+        </details>
+
+        <div class="memo-box">
+          <strong>Breezeway Memo for SH5 7210</strong>
+          <div id="breezeway-memo" class="memo-text">${breezewayMemo}</div><br>
+          <button onclick="copyMemo()">Copy Memo</button>
+          <span id="copied-msg" class="copied-msg">Copied!</span>
+        </div>
+
+      `;
 
       document.getElementById("dialpad-result").innerHTML = output;
     }
